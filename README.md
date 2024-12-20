@@ -1,6 +1,6 @@
 # BookMatch 📚
 
-**BookMatch** é uma plataforma inovadora de recomendação de livros que conecta leitores com suas próximas leituras favoritas. Utilizando preferências de usuários, avaliações e dados de APIs externas, o sistema oferece recomendações personalizadas e permite aos leitores explorar, avaliar e organizar suas leituras.
+**BookMatch** é uma plataforma de recomendação de livros que conecta leitores com suas próximas leituras favoritas. Utilizando preferências de usuários, avaliações e dados de APIs externas, o sistema oferece recomendações personalizadas e permite aos leitores explorar, avaliar e organizar suas leituras.
 
 ---
 
