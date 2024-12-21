@@ -1,30 +1,37 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import pool from "../config/database";
 
-export const registerUser = async ({
-  name,
-  email,
-  password,
-}: {
-  name: string;
-  email: string;
-  password: string;
-}) => {
-  const hashedPassword = await bcrypt.hash(password, 10);
-  // Salvar no banco (a ser implementado)
-  return { id: 1, name, email };
-};
+/**
+ * Serviço para registrar um novo usuário.
+ * @param name Nome do usuário.
+ * @param email Email do usuário.
+ * @param password Senha do usuário.
+ * @returns O usuário criado ou lança um erro.
+ */
+export const registerUserService = async (
+  name: string,
+  email: string,
+  password: string
+) => {
+  try {
+    const emailExists = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
 
-export const authenticateUser = async ({
-  email,
-  password,
-}: {
-  email: string;
-  password: string;
-}) => {
-  // Verificar credenciais no banco (a ser implementado)
-  const token = jwt.sign({ email }, process.env.JWT_SECRET || "secret", {
-    expiresIn: "1h",
-  });
-  return token;
+    if (emailExists.rows.length > 0) {
+      throw new Error("O email já está em uso.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
+      [name, email, hashedPassword]
+    );
+
+    return newUser.rows[0];
+  } catch (err) {
+    throw new Error((err as Error).message || "Erro ao registrar o usuário.");
+  }
 };
