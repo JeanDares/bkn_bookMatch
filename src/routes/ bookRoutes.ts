@@ -3,8 +3,8 @@ import { listBooks, getBookDetails } from "../controllers/bookController";
 
 export const bookRoutes = Router();
 
-// Rota para listar livros com filtros (gênero, autor, etc.)
+// Lista livros com filtros de gênero ou autor
 bookRoutes.get("/", listBooks);
 
-// Rota para obter detalhes de um livro pelo ID
+// Detalhes de um livro pelo ID
 bookRoutes.get("/:id", getBookDetails);
