@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import pool from "../config/database";
-import { getUserById } from "../services/userService";
+import {
+  getAllUsers,
+  getUserById,
+  updatePassword,
+  updateUserById,
+} from "../services/userService";
 import { log } from "node:console";
 
 export const getUser = async (req: Request, res: Response) => {
@@ -21,14 +26,73 @@ export const getUser = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
-  // Lógica para atualizar o usuário no banco
-  res.status(200).json({ id, name, email });
+  try {
+    const { id } = req.params;
+    const { name, email } = req.body;
+
+    // Validação dos parâmetros
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    if (!name || !email) {
+      return res
+        .status(400)
+        .json({ message: "Nome e email são obrigatórios." });
+    }
+
+    const updatedUser = await updateUserById(parseInt(id), name, email);
+    res.status(200).json({
+      message: "Usuário atualizado com sucesso.",
+      user: updatedUser,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Erro ao atualizar o usuário.",
+      error: (err as Error).message,
+    });
+  }
+};
+
+export const updateUserPassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
+
+    // Validações básicas
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "As senhas são obrigatórias." });
+    }
+
+    // Chama o serviço para atualizar a senha
+    const result = await updatePassword(parseInt(id), oldPassword, newPassword);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({
+      message: "Erro ao atualizar a senha.",
+      error: (err as Error).message,
+    });
+  }
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   // Lógica para excluir o usuário do banco
   res.status(200).json({ message: `Usuário com ID ${id} excluído.` });
+};
+
+export const listUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await getAllUsers();
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({
+      message: "Erro ao listar os usuários.",
+      error: (err as Error).message,
+    });
+  }
 };

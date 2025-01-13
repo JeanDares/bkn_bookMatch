@@ -1,7 +1,6 @@
-version: "3.8"
-
+version: "3.9"
 services:
-  postgres:
+  postgres_db:
     image: postgres:latest
     container_name: postgres_db
     environment:
@@ -9,9 +8,27 @@ services:
       POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: bookmatch
     ports:
-      - "5433:5432"
+      - "5433:5432" # Exponha o PostgreSQL na porta 5433
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # Persistência de dados
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80" # Porta para acessar o pgAdmin
+    networks:
+      - backend
 
 volumes:
   postgres_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
