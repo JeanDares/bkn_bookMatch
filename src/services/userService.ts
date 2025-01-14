@@ -1,5 +1,6 @@
 import pool from "../config/database";
 import bcrypt from "bcrypt";
+import { User } from "../types/app";
 
 export const getUserById = async (id: number) => {
   const result = await pool.query("SELECT * FROM Users WHERE id = $1", [id]); // Faz a query no banco
@@ -22,23 +23,20 @@ export const getAllUsers = async () => {
  */
 export const updateUserById = async (
   id: number,
-  name: string,
-  email: string
-) => {
-  try {
-    const result = await pool.query(
-      "UPDATE users SET name = $1, email = $2 WHERE id = $3 RETURNING *",
-      [name, email, id]
-    );
+  name?: string,
+  email?: string,
+  preferences?: Record<string, any>
+): Promise<User> => {
+  const result = await pool.query(
+    "UPDATE users SET name = $1, email = $2, preferences = $3 WHERE id = $4 RETURNING *",
+    [name, email, preferences, id]
+  );
 
-    if (result.rowCount === 0) {
-      throw new Error("Usuário não encontrado.");
-    }
-
-    return result.rows[0]; // Retorna o usuário atualizado
-  } catch (err) {
-    throw new Error("Erro ao atualizar o usuário: " + (err as Error).message);
+  if (result.rowCount === 0) {
+    throw new Error("Usuário não encontrado.");
   }
+
+  return result.rows[0];
 };
 
 /**

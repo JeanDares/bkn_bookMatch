@@ -6,11 +6,12 @@ import {
   listUsers,
   updateUserPassword,
 } from "../controllers/userController";
+import { authenticate } from "../middlewares/authenticate";
 
 export const userRoutes = Router();
 
 userRoutes.get("/", listUsers);
-userRoutes.get("/:id", getUser);
+userRoutes.get("/:id", authenticate, getUser);
 userRoutes.put("/:id", updateUser);
 userRoutes.put("/:id/password", updateUserPassword);
 userRoutes.delete("/:id", deleteUser);

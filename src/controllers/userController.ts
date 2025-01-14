@@ -7,6 +7,7 @@ import {
   updateUserById,
 } from "../services/userService";
 import { log } from "node:console";
+import { UpdateUserRequest } from "../types/app";
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -25,27 +26,27 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (
+  req: Request<{ id: string }, {}, UpdateUserRequest>,
+  res: Response
+) => {
   try {
     const { id } = req.params;
-    const { name, email } = req.body;
+    const { name, email, preferences } = req.body;
 
-    // Validação dos parâmetros
     if (!id || isNaN(parseInt(id))) {
       return res.status(400).json({ message: "ID inválido." });
     }
 
-    if (!name || !email) {
-      return res
-        .status(400)
-        .json({ message: "Nome e email são obrigatórios." });
-    }
-
-    const updatedUser = await updateUserById(parseInt(id), name, email);
-    res.status(200).json({
-      message: "Usuário atualizado com sucesso.",
-      user: updatedUser,
-    });
+    const updatedUser = await updateUserById(
+      parseInt(id),
+      name,
+      email,
+      preferences
+    );
+    res
+      .status(200)
+      .json({ message: "Usuário atualizado com sucesso.", user: updatedUser });
   } catch (err) {
     res.status(500).json({
       message: "Erro ao atualizar o usuário.",
