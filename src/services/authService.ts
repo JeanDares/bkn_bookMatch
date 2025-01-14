@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import pool from "../config/database";
+import jwt from "jsonwebtoken";
 
 /**
  * Serviço para registrar um novo usuário.
@@ -33,5 +34,32 @@ export const registerUserService = async (
     return newUser.rows[0];
   } catch (err) {
     throw new Error((err as Error).message || "Erro ao registrar o usuário.");
+  }
+};
+
+export const loginUser = async (email: string, password: string) => {
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
+    const user = result.rows[0];
+
+    if (!user) {
+      throw new Error("Usuário ou senha inválidos.");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Usuário ou senha inválidos.");
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email }, // Payload do token
+      process.env.JWT_SECRET!, // Chave secreta (definida no .env)
+      { expiresIn: "1h" } // Expiração do token
+    );
+    return { token, user };
+  } catch (err) {
+    throw new Error((err as Error).message || "Erro ao fazer login.");
   }
 };
