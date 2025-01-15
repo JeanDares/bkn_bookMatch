@@ -39,17 +39,21 @@ export const registerUserService = async (
 
 export const loginUser = async (email: string, password: string) => {
   try {
+    console.log(`[INFO]: Tentativa de login para o email: ${email}`);
+
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
     const user = result.rows[0];
 
     if (!user) {
+      console.error(`[ERROR]: Usuário não encontrado: ${email}`);
       throw new Error("Usuário ou senha inválidos.");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      console.error(`[ERROR]: Senha inválida para o email: ${email}`);
       throw new Error("Usuário ou senha inválidos.");
     }
 
@@ -58,8 +62,11 @@ export const loginUser = async (email: string, password: string) => {
       process.env.JWT_SECRET!, // Chave secreta (definida no .env)
       { expiresIn: "1h" } // Expiração do token
     );
+
+    console.log(`[SUCCESS]: Login bem-sucedido para o email: ${email}`);
     return { token, user };
   } catch (err) {
+    console.error(`[ERROR]: Erro ao fazer login: ${(err as Error).message}`);
     throw new Error((err as Error).message || "Erro ao fazer login.");
   }
 };

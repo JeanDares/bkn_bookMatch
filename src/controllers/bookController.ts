@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { searchBooks } from "../services/bookService";
+import { SUPPORTED_LANGUAGES } from "../utils/constants";
 
 /**
  * Lista livros com base em filtros de gênero e autor usando a Google Books API.
@@ -7,20 +8,27 @@ import { searchBooks } from "../services/bookService";
  * @param res Objeto de resposta do Express.
  */
 export const listBooks = async (req: Request, res: Response) => {
-  const { genre, author } = req.query;
+  const { genre, author, language } = req.query;
 
   if (!genre && !author) {
     return res.status(400).json({
-      message: "Por favor, forneça pelo menos um filtro: gênero ou autorrrrr.",
+      message: "Por favor, forneça pelo menos um filtro: gênero ou autor.",
     });
   }
 
   try {
-    const query = `${genre ? `subject:${genre}` : ""} ${
-      author ? `inauthor:${author}` : ""
-    }`.trim();
+    // Combinar múltiplos gêneros, se fornecidos
+    const genres = genre
+      ? (genre as string)
+          .split(",")
+          .map((g) => `subject:${g}`)
+          .join(" ")
+      : "";
 
-    const books = await searchBooks(query);
+    const query = `${genres} ${author ? `inauthor:${author}` : ""}`.trim();
+
+    const books = await searchBooks(query, 10);
+
     res.status(200).json(books);
   } catch (err: unknown) {
     res.status(500).json({
