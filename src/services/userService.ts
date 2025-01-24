@@ -84,3 +84,26 @@ export const updatePassword = async (
     throw new Error("Erro ao atualizar senha: " + (err as Error).message);
   }
 };
+
+export const saveUserPreferences = async (
+  userId: number,
+  preferences: string[]
+) => {
+  try {
+    console.log("Salvando preferências:", JSON.stringify(preferences)); // Log para depuração
+
+    const result = await pool.query(
+      "UPDATE users SET preferences = $1 WHERE id = $2 RETURNING *",
+      [JSON.stringify(preferences), userId] // Serializa o array para JSON
+    );
+
+    if (result.rowCount === 0) {
+      throw new Error("Usuário não encontrado.");
+    }
+
+    return result.rows[0];
+  } catch (err) {
+    console.error("Erro ao salvar preferências:", err); // Log do erro
+    throw new Error("Erro ao salvar preferências: " + (err as Error).message);
+  }
+};

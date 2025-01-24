@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import { searchBooks } from "../services/bookService";
 import { SUPPORTED_LANGUAGES } from "../utils/constants";
+import { saveUserPreferences } from "../services/userService";
+import { AuthenticatedUser } from "../types/app";
+
+interface AuthenticatedRequest extends Request {
+  user?: AuthenticatedUser; // Usa o tipo definido no arquivo authentication.ts
+}
 
 /**
  * Lista livros com base em filtros de gênero e autor usando a Google Books API.
@@ -62,6 +68,36 @@ export const getBookDetails = async (req: Request, res: Response) => {
     console.error("Erro ao buscar detalhes do livro:", err);
     res.status(500).json({
       message: "Erro ao buscar detalhes do livro.",
+      error: (err as Error).message,
+    });
+  }
+};
+
+export const addPreferences = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user?.id;
+  const { preferences } = req.body;
+
+  console.log("addPreferences - userId:", userId);
+  console.log("addPreferences - preferences:", preferences);
+
+  if (!Array.isArray(preferences)) {
+    return res
+      .status(400)
+      .json({ message: "O campo 'preferences' deve ser um array de strings." });
+  }
+
+  try {
+    if (userId === undefined) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+    const user = await saveUserPreferences(userId, preferences);
+    res.status(200).json({ message: "Preferências salvas com sucesso.", user });
+  } catch (err) {
+    res.status(500).json({
+      message: "Erro ao salvar preferências.",
       error: (err as Error).message,
     });
   }

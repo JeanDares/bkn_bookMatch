@@ -52,6 +52,7 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         has_preferences: user.has_preferences,
+        preferences: user.preferences,
       },
     });
   } catch (err: unknown) {
